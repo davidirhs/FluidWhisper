@@ -15,6 +15,8 @@ def setup_logging(log_level):
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
+ 
+
 def main():
     config = load_config()
     setup_logging(config.get('log_level', 'WARNING'))

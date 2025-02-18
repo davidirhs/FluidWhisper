@@ -254,9 +254,9 @@ class AudioRecorder:
     def audio_callback(self, indata, frames, time_info, status):
         self.recordings.append(indata.copy())
         amplitude = float(np.sqrt(np.mean(indata**2)))
-        # Only push amplitude if the visualizer is still available.
-        if self.visualizer is not None:
-            self.master.after(0, lambda: self.visualizer.push_amplitude(amplitude))
+        viz = self.visualizer  # capture the reference
+        if viz is not None:
+            self.master.after(0, lambda: viz.push_amplitude(amplitude))
 
     def process_transcriptions(self):
         """Worker thread that transcribes queued audio."""
