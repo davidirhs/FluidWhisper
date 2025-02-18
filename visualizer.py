@@ -55,5 +55,11 @@ class WaveformFrame(tk.Frame):
             return
 
     def stop(self):
-        """Trigger fade-out effect."""
+        """Trigger fade-out effect and cancel pending callbacks."""
         self.fading_out = True
+        if self.after_id is not None:
+            try:
+                self.after_cancel(self.after_id)
+            except Exception as e:
+                print("after_cancel error:", e)
+            self.after_id = None

@@ -542,7 +542,8 @@ class AudioRecorder:
         amplitude = float(np.sqrt(np.mean(indata**2)))
         # Only push amplitude if the visualizer is still available.
         if self.visualizer is not None:
-            self.master.after(0, lambda: self.visualizer.push_amplitude(amplitude))
+            self.master.after(0, lambda: self.visualizer and self.visualizer.push_amplitude(amplitude))
+
 
     def process_transcriptions(self):
         """Worker thread that transcribes queued audio."""
