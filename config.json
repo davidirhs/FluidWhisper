@@ -4,6 +4,6 @@
   "cancel_shortcut": "esc",
   "notify_clipboard_saving": true,
   "log_level": "WARNING",
-  "language": "es",
+  "language": "en",
   "device": "cuda"
 }

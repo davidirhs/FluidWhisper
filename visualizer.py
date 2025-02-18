@@ -1,7 +1,7 @@
 import tkinter as tk
 
 class WaveformFrame(tk.Frame):
-    def __init__(self, master, width=300, height=60, wave_color="white", config=None):
+    def __init__(self, master, width=300, height=80, wave_color="white", config=None):
         super().__init__(master, width=width, height=height, bg="black")
         self.width = width
         self.height = height
@@ -62,4 +62,4 @@ class WaveformFrame(tk.Frame):
                 self.after_cancel(self.after_id)
             except Exception as e:
                 print("after_cancel error:", e)
-            self.after_id = None
+            self.after_id = None 
