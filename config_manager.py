@@ -1,28 +1,24 @@
-import json
-import os
+from PySide6.QtCore import QSettings
 
-CONFIG_FILE = 'config.json'
+# Define default configuration values.
 DEFAULT_CONFIG = {
-  "model_name": "deepdml/faster-whisper-large-v3-turbo-ct2",
-  "shortcut": "alt+shift+r",
-  "cancel_shortcut": "esc",
-  "notify_clipboard_saving": True,
-  "log_level": "WARNING",
-  "language": "en",
-  "device": "cuda"
+    "shortcut": "alt+shift+r",
+    "cancel_shortcut": "esc",
+    "notify_clipboard_saving": True,
+    "log_level": "WARNING",
+    "language": "en",
+    "device": "cuda"
 }
 
 def load_config():
-    if not os.path.exists(CONFIG_FILE):
-        save_config(DEFAULT_CONFIG)
-        return DEFAULT_CONFIG
-    with open(CONFIG_FILE, 'r') as f:
-        config = json.load(f)
-    for key, value in DEFAULT_CONFIG.items():
-        if key not in config:
-            config[key] = value
+    settings = QSettings("davidirhs", "FluidWhisper")
+    config = {}
+    # Retrieve each value with a fallback to the default.
+    for key, default in DEFAULT_CONFIG.items():
+        config[key] = settings.value(key, default)
     return config
 
 def save_config(config):
-    with open(CONFIG_FILE, 'w') as f:
-        json.dump(config, f, indent=2)
+    settings = QSettings("davidirhs", "FluidWhisper")
+    for key in DEFAULT_CONFIG:
+        settings.setValue(key, config.get(key, DEFAULT_CONFIG[key]))

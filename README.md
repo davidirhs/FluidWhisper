@@ -1,102 +1,114 @@
 # FluidWhisper
 
-FluidWhisper is a lightweight desktop application designed for recording audio, visualizing waveforms in real time, and transcribing speech using the `faster-whisper` model. Built with Python and Tkinter, it features configurable global hotkeys, an integrated settings window, and system tray integration for seamless operation.
+FluidWhisper is a lightweight, cross-platform audio recording and transcription tool that runs as a standalone executable. It allows you to capture audio with customizable hotkeys, view a real-time waveform during recording, and transcribe speech using an optimized Whisper model. The transcription is automatically copied to your clipboard for immediate use.
 
 ## Features
 
-- **Audio Recording**: Start and stop recording using global hotkeys.
-- **Real-time Waveform Visualization**: Monitor audio levels live with an embedded waveform display.
-- **Speech Transcription**: Convert recorded audio to text using the `faster-whisper` model.
-- **Clipboard Integration**: Automatically copies transcriptions to the clipboard.
-- **Customizable Shortcuts & Settings**: Adjust global hotkeys, language settings, and more via an in-app settings window.
-- **System Tray Integration**: Access core functions directly from the system tray.
+- **Hotkey-Controlled Recording:**  
+  Start and stop recording with customizable shortcuts (default: `Alt+Shift+R` to start/stop, `Esc` to cancel).
 
-## Prerequisites
+- **Real-Time Waveform Visualization:**  
+  Monitor audio levels with a live waveform display during recording.
 
-- **Python 3.7+**: Ensure you have Python installed.
-- **CUDA (Optional)**: For GPU acceleration, ensure CUDA is available. (The default device is set to `cuda` in the configuration.)
+- **Fast & Accurate Transcription:**  
+  Powered by an optimized Whisper model for efficient speech-to-text conversion.
 
-## Installation
+- **Clipboard Integration:**  
+  Transcribed text is copied to your clipboard and auto-pasted for seamless workflows.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/FluidWhisper.git
-cd FluidWhisper
-```
+- **Customizable Settings:**  
+  Adjust hotkeys, language, and model preferences via an intuitive settings dialog.
 
-### 2. Create and Activate a Virtual Environment
-#### Create Virtual Environment:
-```bash
-python -m venv .venv
-```
+## Download & Installation
 
-#### Activate Virtual Environment:
-- On macOS/Linux:
-  ```bash
-  source .venv/bin/activate
-  ```
-- On Windows:
-  ```bash
-  .venv\Scripts\activate
-  ```
+FluidWhisper is distributed as a standalone `.exe` file for Windows. No Python installation or dependencies are required!
 
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+1. **Download the Executable:**  
+   - Grab the latest release from the [Releases page](#) (replace with actual URL once available).  
+   - File: `FluidWhisper-vX.X.X.exe` (version number may vary).
+
+2. **Run the Application:**  
+   - Double-click `FluidWhisper-vX.X.X.exe` to launch it.  
+   - The app will minimize to your system tray upon startup.
+
+3. **First-Time Setup (Automatic):**  
+   - On first run, FluidWhisper will download its transcription model and supporting binaries (internet connection required).  
+   - Downloads are stored in `~/.fluidwhisper/` (e.g., `C:\Users\<YourName>\.fluidwhisper\`).
+
+## Usage
+
+1. **Launch FluidWhisper:**  
+   Double-click the `.exe` file. It will appear in your system tray (look for the FluidWhisper icon).
+
+2. **Record Audio:**  
+   - Press `Alt+Shift+R` (default) to start recording.  
+   - A window with a live waveform will appear.  
+   - Press `Alt+Shift+R` again to stop, or `Esc` to cancel.
+
+3. **Transcription:**  
+   - After stopping, FluidWhisper processes the audio and copies the transcription to your clipboard.  
+   - It also auto-pastes the text (simulating `Ctrl+V`) wherever your cursor is active.
+
+4. **Settings:**  
+   - Right-click the system tray icon and select **Settings** to customize:  
+     - Recording shortcut (e.g., `Alt+Shift+R`)  
+     - Cancel shortcut (e.g., `Esc`)  
+     - Language (e.g., "auto", "English", "Spanish")  
+     - Model (e.g., "Normal", "Pro", "Ultra" - varies by size and accuracy).
+
+5. **Exit:**  
+   - Right-click the tray icon and choose **Exit** to close the app.
 
 ## Configuration
 
-The application settings are stored in `config.json`. The default configuration includes:
+Settings are saved automatically via the in-app dialog and stored persistently using `QSettings`. On first run, defaults include:
 
-```json
-{
-  "model_name": "deepdml/faster-whisper-large-v3-turbo-ct2",
-  "shortcut": "alt+shift+r",
-  "cancel_shortcut": "esc",
-  "notify_clipboard_saving": true,
-  "log_level": "WARNING",
-  "language": "en",
-  "device": "cuda"
-}
-```
+- **Recording Shortcut:** `Alt+Shift+R`  
+- **Cancel Shortcut:** `Esc`  
+- **Language:** Auto-detect  
+- **Model:** Ultra (most accurate, 1.62 GB)  
 
-You can modify these settings directly in the `config.json` file or through the in-app settings window.
+Files are stored in `~/.fluidwhisper/`:
+- **Models:** Pre-trained Whisper models (e.g., `ggml-large-v3-turbo.bin`).  
+- **Binaries:** Whisper server executable (e.g., `whisper-server.exe`).
+
+## System Requirements
+
+- **OS:** Windows (64-bit)  
+- **RAM:** 4 GB minimum (8 GB+ recommended for "Ultra" model)  
+- **Storage:** ~2 GB for models and binaries  
+- **Internet:** Required on first run for downloads  
+- **GPU (Optional):** NVIDIA GPU with CUDA support for faster transcription (falls back to CPU if unavailable)
+
+## Troubleshooting
+
+- **App Doesn’t Start:**  
+  Ensure you have write permissions in your home directory (`C:\Users\<YourName>\`). Check logs in `~/.fluidwhisper/` if available.
+
+- **Hotkeys Not Working:**  
+  Adjust them in the Settings dialog; avoid conflicts with other apps.
+
+- **Transcription Slow:**  
+  Switch to a lighter model (e.g., "Normal") in Settings if using a CPU or low-memory system.
+
+## For Developers
+
+FluidWhisper is built with Python and PySide6, packaged into an `.exe` using tools like PyInstaller. Source code includes:
+
+- `main.py`: Entry point, system tray, and app setup.  
+- `recorder.py`: Audio capture, waveform, and transcription logic.  
+- `transcriber.py`: Interfaces with the Whisper server.  
+- `visualizer.py`: Real-time waveform rendering.  
+- `config_manager.py`: Persistent settings management.
+
+To use from source:
+1. Clone the repo: `git clone <repository-url>`  
+2. Install dependencies: `pip install -r requirements.txt`  
+3. Run: `python main.py`  
 
 
-## Running the Application
+## Acknowledgements
 
-To launch FluidWhisper, run the following command from the project root:
-```bash
-python main.py
-```
-The application will launch in the background with a system tray icon. Use the configured global hotkeys to start and stop recording.
-
-## Project Structure
-```
-FluidWhisper/
-├── .gitignore
-├── config.json
-├── config_manager.py
-├── main.py
-├── recorder.py
-├── requirements.txt
-├── transcriber.py
-└── visualizer.py
-```
-- **`.gitignore`**: Specifies files and directories to be ignored by Git.
-- **`config.json`**: Contains the application's configuration settings.
-- **`config_manager.py`**: Manages loading and saving configuration settings.
-- **`main.py`**: Entry point of the application.
-- **`recorder.py`**: Contains the logic for audio recording, system tray integration, and transcription processing.
-- **`transcriber.py`**: Implements speech transcription using the `faster-whisper` model.
-- **`visualizer.py`**: Provides real-time waveform visualization.
-
-## GitHub Repository Description
-
-FluidWhisper is a Python-based desktop application for audio recording, real-time waveform visualization, and speech transcription using the `faster-whisper` model. With global hotkeys, clipboard integration, and customizable settings, FluidWhisper is ideal for professionals and enthusiasts alike seeking a robust transcription tool.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository, make your changes, and open a pull request with your improvements or bug fixes.
-
+- **Whisper.cpp:** For the efficient transcription backend.  
+- **PySide6:** For the GUI framework.  
+- Thanks to the open-source community for tools and inspiration!

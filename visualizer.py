@@ -1,65 +1,87 @@
-import tkinter as tk
+from PySide6.QtWidgets import QWidget, QSizePolicy
+from PySide6.QtGui import QPainter, QColor, QLinearGradient, QPolygonF
+from PySide6.QtCore import QTimer, Qt, QPointF
+import numpy as np
 
-class WaveformFrame(tk.Frame):
-    def __init__(self, master, width=300, height=80, wave_color="white", config=None):
-        super().__init__(master, width=width, height=height, bg="black")
+class WaveformWidget(QWidget):
+    def __init__(self, width=400, height=60):
+        super().__init__()
+        self.setMinimumSize(width, height)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.width = width
         self.height = height
-        self.wave_color = wave_color
-        self.config_obj = config
-
-        # Set up the canvas with a black background.
-        self.canvas = tk.Canvas(self, width=self.width, height=self.height, bg="black", highlightthickness=0)
-        self.canvas.pack()
-
-        # List to store amplitude history for waveform drawing
+        self.wave_color = QColor(200, 200, 200)  # Light grey for the waveform
         self.amplitudes = [0] * self.width
+        self.mode = 'recording'
+        self.phase = 0
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_waveform)
+        self.timer.start(50)  # Update every 50 ms
+        self.animation_timer = None
 
-        self._running = True
-        self.fading_out = False  # Flag for fade-out effect
+    def set_mode(self, mode):
+        self.mode = mode
+        if mode == 'processing':
+            if not self.animation_timer:
+                self.animation_timer = QTimer(self)
+                self.animation_timer.timeout.connect(self.update_phase)
+                self.animation_timer.start(30)
+        elif self.animation_timer:
+            self.animation_timer.stop()
+            self.animation_timer = None
+            self.phase = 0
 
-        # Start the update loop (roughly 20 fps)
-        self.after_id = self.after(50, self._draw_waveform)
+    def update_phase(self):
+        self.phase += 0.3
+        self.update()
+
+    def update_waveform(self):
+        if self.mode == 'recording':
+            self.update()
 
     def push_amplitude(self, amplitude):
-        """Append a new amplitude value and maintain history length equal to the widget width."""
-        self.amplitudes.append(amplitude)
-        if len(self.amplitudes) > self.width:
-            self.amplitudes.pop(0)
+        if self.mode == 'recording':
+            # Scale non-negative amplitude to use full height, matching old sensitivity
+            scaled_amplitude = min(amplitude / 0.3, 1.0)  # Cap at 1.0, using /0.3 for sensitivity
+            self.amplitudes.append(scaled_amplitude)
+            if len(self.amplitudes) > self.width:
+                self.amplitudes.pop(0)
 
-    def _draw_waveform(self):
-        if not self._running:
-            return
-        try:
-            mid_y = self.height // 2
-            points = []
-            # Use amplitude history to create waveform points
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.fillRect(self.rect(), QColor(30, 30, 30))  # Dark grey background
+
+        points = []
+
+        if self.mode == 'recording':
+            # Use full height for non-negative amplitudes, starting from bottom
+            base_y = self.height  # Start at the bottom
             for x, amp in enumerate(self.amplitudes[-self.width:]):
-                scaled_amp = min(amp / 0.3, 1.0)  # Normalize amplitude (0.3 as near-max value)
-                y = mid_y - scaled_amp * (self.height / 2)
-                points.append((x, y))
-            if len(points) > 1:
-                flat_points = [coord for point in points for coord in point]
-                self.canvas.delete("wave")
-                self.canvas.create_line(*flat_points, fill=self.wave_color, width=2, tag="wave")
-            # Fade-out effect handling
-            if self.fading_out:
-                self.amplitudes = [amp * 0.9 for amp in self.amplitudes]
-                if max(self.amplitudes) < 0.01:
-                    self._running = False
-                    self.destroy()
-                    return
-            self.after_id = self.after(50, self._draw_waveform)
-        except tk.TclError:
-            # If the widget has been destroyed, ignore further updates.
-            return
+                # Scale amplitude to fill the height (0 at bottom, 1 at top)
+                y = base_y - (amp * self.height)  # Invert so larger amplitudes go higher
+                points.append(QPointF(x, y))
+        else:  # Processing mode
+            mid_y = self.height // 2
+            for x in range(self.width):
+                amp = 0.5 + 0.45 * np.sin((x / 15) + (self.phase % (2 * np.pi)))
+                y = mid_y - (amp * (self.height * 0.4))
+                points.append(QPointF(x, y))
+
+        # Close the polygon for filling (from bottom to bottom)
+        points.append(QPointF(self.width, self.height))
+        points.append(QPointF(0, self.height))
+        polygon = QPolygonF(points)
+
+        # Gradient for waveform fill (light grey to transparent, bottom to top)
+        gradient = QLinearGradient(0, self.height, 0, 0)  # Gradient from bottom (dark) to top (transparent)
+        gradient.setColorAt(0, self.wave_color)
+        gradient.setColorAt(1, Qt.transparent)
+        painter.setBrush(gradient)
+        painter.setPen(Qt.NoPen)
+        painter.drawPolygon(polygon)
 
     def stop(self):
-        """Trigger fade-out effect and cancel pending callbacks."""
-        self.fading_out = True
-        if self.after_id is not None:
-            try:
-                self.after_cancel(self.after_id)
-            except Exception as e:
-                print("after_cancel error:", e)
-            self.after_id = None 
+        self.timer.stop()
+        if self.animation_timer:
+            self.animation_timer.stop()

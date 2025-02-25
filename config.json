@@ -1,9 +1,0 @@
-{
-  "model_name": "deepdml/faster-whisper-large-v3-turbo-ct2",
-  "shortcut": "alt+shift+r",
-  "cancel_shortcut": "esc",
-  "notify_clipboard_saving": true,
-  "log_level": "WARNING",
-  "language": "en",
-  "device": "cuda"
-}
