@@ -154,6 +154,7 @@ class AudioRecorder(QObject):
         super().__init__()
         self.app = app
         self.config = config
+        self.threadpool = QThreadPool()  # Initialize threadpool here
         self.recording_window = None
         self.is_recording = False
         self.canceled = False
@@ -179,7 +180,7 @@ class AudioRecorder(QObject):
             }
         }
         
-        self.download_model(self.config.get('model', 'ultra'))
+        self.download_model(self.config.get('model', 'ultra'))  # Now safe to call
         self.executable_path = self.setup_executable()
         model_key = self.config.get('model', 'ultra')
         self.model_path = os.path.join(self.models_dir, self.model_options[model_key]["name"])
@@ -407,7 +408,7 @@ class AudioRecorder(QObject):
         layout.addWidget(QLabel("Cancel Shortcut:"))
         cancel_shortcut_input = QLineEdit(self.config.get('cancel_shortcut', 'esc'))
         layout.addWidget(cancel_shortcut_input)
-        layout.addWidget(QLabel("Language (leave empty for auto-detection):"))
+        layout.addWidget(QLabel("Language:"))
         language_combo = QComboBox()
         languages = [("", "auto"), ("English", "en"), ("Spanish", "es")]
         for display, code in languages:
